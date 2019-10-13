@@ -1,20 +1,24 @@
 // if object in the dectecting range of an ultrasonic sensor, the corresponding vibration motor shal vibrate intermittently(0.1s on 0.1s off)
 // if receive radio signal that referee whistled, all vibration motors vibrate together last 3 second
 
+// VirtualWire changes TIMER1 setting,  pwm pin 5,6,12 won't hv conflict  (9,10 will be influenced)
+
 #include <VirtualWire.h>  //library for RF kit
 
 byte message[VW_MAX_MESSAGE_LEN];  // come in message as byte array
 byte messageLength=VW_MAX_MESSAGE_LEN;  // length of array
 
-int trigPin[3]={2,4,6};      // trigger pin of 3 ultrasensors
-int echoPin[3]={3,5,7};      // echo pin of 3 ultrasensors
-int vibPin[3]={8,9,10};      // power source pin of 3 vibrations
+int trigPin[3]={2,4,8};      // trigger pin of 3 ultrasensors
+int echoPin[3]={3,7,9};      // echo pin of 3 ultrasensors
+
+int vibPin[3]={5,6,12};      // power source pin of 3 vibrations wz pwm func
+
 int rfRcv=11;                // pin number of RF receiver
 
 unsigned long previousMillis = 0;   // record timing
 const long interval = 100;   // interval of vibration on and off
 
-bool vibRun[3]={false,false,false};   // whehter turn on the vibraton
+int vibRun[3]={0,0,0};   // whehter turn on the vibraton
 
 bool vibState=false;
 
@@ -56,7 +60,7 @@ void MeasureAndVibrate(){
   //3 ultrasonic measuring, if object inside range, keep vibration working
   Measurement(0); 
   Measurement(1);
-  Measurement(2);
+//  Measurement(2);
 
   //after each interval, change the state of vibration
   if (currentMillis - previousMillis >= interval)  
@@ -65,13 +69,13 @@ void MeasureAndVibrate(){
     vibState=!vibState;
     
     //if specific vibration should be working, then intermittently vibrate
-    for(int i=0; i<3; i++){
-      if(vibRun[i])
-      {
-        digitalWrite(vibPin[i],vibState);    
+    if(vibState){
+      for(int i=0; i<3; i++){
+        analogWrite(vibPin[i],vibRun[i]);     
       }
-      else{
-        digitalWrite(vibPin[i],false);
+    }else{
+      for(int i=0; i<3; i++){
+        analogWrite(vibPin[i],0);     
       }
     }
   }
@@ -94,24 +98,33 @@ void Measurement(int nr){
   distance = (duration*0.034/2);
 
   // distance to be adjust later
-  if (distance <= 100 && distance >5){
-    vibRun[nr]=true;
+  if (distance <= 50 && distance >10){
+    vibRun[nr]=255;
     Serial.print(nr);
     Serial.print(":");
     Serial.print(distance);
     Serial.println("cm");
-  }else{
-    vibRun[nr]=false;
+  }
+  else if(distance<=100 && distance >50)
+  {
+    vibRun[nr]=120;
+    Serial.print(nr);
+    Serial.print(":");
+    Serial.print(distance);
+    Serial.println("cm");
+  }
+  else{
+    vibRun[nr]=0;
   }
   delay(50);
 }
 
 void VibrateAll(){
   for(int i=0; i<3; i++){
-    digitalWrite(vibPin[i],true);
+    analogWrite(vibPin[i],255);
   }
   delay(3000);
   for(int i=0; i<3; i++){
-    digitalWrite(vibPin[i],false);
+    analogWrite(vibPin[i],0);
   }
 }
