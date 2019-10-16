@@ -1,7 +1,7 @@
 #include <VirtualWire.h>  //library for RF kit
 #include <FreqMeasure.h>  //library for frequence measurement
 
-//receiver on D11, transmitter on D12
+//default receiver on D11, transmitter on D12
 void setup() {
   Serial.begin(9600);
   FreqMeasure.begin();    //initialize including pbs of processor
@@ -13,6 +13,7 @@ float frequency;
 int continuity =0;
 
 void loop() {
+  // while receive sound, calculate the sine wave occurs during the duration and convert to square wave with frequency
   if (FreqMeasure.available()) {
     sum = sum + FreqMeasure.read();
     count = count + 1;
@@ -24,23 +25,26 @@ void loop() {
       count = 0;
     }
   }
+  // reach the speific frequecy range of whistle and count the duration
   if (frequency>2700 && frequency<2830)
-    { continuity++;
-      Serial.println(continuity);
-      frequency=0;
-    }
-    else if((frequency>0 && frequency<=2700)||frequency>=2830){
-      continuity=0;
-      Serial.println(continuity);
-     frequency=0;
-    }
+  { 
+    continuity++;
+    Serial.println(continuity);
+    frequency=0;
+  }
+  else if((frequency>0 && frequency<=2700)||frequency>=2830)
+  {
+    continuity=0;
+    Serial.println(continuity);
+    frequency=0;
+  }
 
   if (continuity >=4)
-    { 
-      continuity=0; 
-      send();
-      delay(2000);
-     }
+  { 
+    continuity=0; 
+    send();
+    delay(2000);
+  }
 }
 
 void send ()
@@ -49,6 +53,6 @@ void send ()
   const char * message="Defo_Fouls";
   Serial.println(message);
   vw_send((uint8_t *)message, strlen(message));
-  vw_wait_tx();           // wait until the whole message is gone
+  vw_wait_tx();           // wait until the whole message is sent
   FreqMeasure.begin();
 }
