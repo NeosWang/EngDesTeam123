@@ -94,7 +94,7 @@ void Measurement(int nr){
   distance = (duration*0.034/2);
 
   // distance to be adjust later
-  if (distance <= 100 && distance >5){
+  if (distance <= 300 && distance >5){
     vibRun[nr]=true;
     Serial.print(nr);
     Serial.print(":");
@@ -103,7 +103,7 @@ void Measurement(int nr){
   }else{
     vibRun[nr]=false;
   }
-  delay(50);
+  delay(300);
 }
 
 void VibrateAll(){
