@@ -24,24 +24,29 @@ void loop() {
       count = 0;
     }
   }
-
   if (frequency>2700 && frequency<2830)
     { continuity++;
       Serial.println(continuity);
       frequency=0;
+    }
+    else if((frequency>0 && frequency<=2700)||frequency>=2830){
+      continuity=0;
+      Serial.println(continuity);
+     frequency=0;
     }
 
   if (continuity >=4)
     { 
       continuity=0; 
       send();
-      delay(2000);}
+      delay(2000);
+     }
 }
 
 void send ()
 { 
   vw_setup(2000);         // bits per sec, must setup inside function, cuz the RF and Frequency converter need initialize different bps on processor
-  const char * message="ShitHappens";
+  const char * message="Defo_Fouls";
   Serial.println(message);
   vw_send((uint8_t *)message, strlen(message));
   vw_wait_tx();           // wait until the whole message is gone
