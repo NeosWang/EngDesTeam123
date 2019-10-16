@@ -1,24 +1,25 @@
 // if object in the dectecting range of an ultrasonic sensor, the corresponding vibration motor shal vibrate intermittently(0.1s on 0.1s off)
 // if receive radio signal that referee whistled, all vibration motors vibrate together last 3 second
 
-// VirtualWire changes TIMER1 setting,  pwm pin 5,6,12 won't hv conflict  (9,10 will be influenced)
+// VirtualWire changes TIMER1 setting, pwm pin only 5,6 won't get conflicted under default configation.
+// change configration on pin of rx from default 11 to 12, then offer 11 as pwm
 
 #include <VirtualWire.h>  //library for RF kit
 
 byte message[VW_MAX_MESSAGE_LEN];  // come in message as byte array
 byte messageLength=VW_MAX_MESSAGE_LEN;  // length of array
 
-int trigPin[3]={2,4,8};      // trigger pin of 3 ultrasensors
-int echoPin[3]={3,7,9};      // echo pin of 3 ultrasensors
+const int trigPin[3]={2,4,8};      // trigger pin of 3 ultrasensors
+const int echoPin[3]={3,7,9};      // echo pin of 3 ultrasensors
 
-int vibPin[3]={5,6,12};      // power source pin of 3 vibrations wz pwm func
+const int vibPin[3]={5,6,11};      // power source pin of 3 vibrations wz pwm func
 
-int rfRcv=11;                // pin number of RF receiver
+const int rfRcv=12;                // pin number of RF receiver
 
-unsigned long previousMillis = 0;   // record timing
-const long interval = 100;   // interval of vibration on and off
+unsigned long previousMillis = 0;  // record timing
+const long interval = 100;         // interval of vibration on and off
 
-int vibRun[3]={0,0,0};   // whehter turn on the vibraton
+int vibRun[3]={0,0,0};             // whehter turn on the vibraton
 
 bool vibState=false;
 
@@ -36,8 +37,10 @@ void setup() {
   pinMode(vibPin[1], OUTPUT);
   pinMode(vibPin[2], OUTPUT);
 
-  vw_setup(2000);     // initialize RF receiver
+  vw_set_rx_pin(rfRcv); // change configration
+  vw_setup(2000);     // initialize RF receiver,Bits per sec
   vw_rx_start();
+
 }
 
 void loop(){
@@ -45,13 +48,14 @@ void loop(){
  while(!vw_get_message(message,&messageLength)){
   MeasureAndVibrate();
  }
- 
- // print the come in message
- for(int i=0;i<messageLength;i++){
-  Serial.write(message[i]);   //print ascii as char
- }
- Serial.println(); 
- VibrateAll(); // all vibrations works 3 sec 
+ //convert byt array to unsigned char to string
+ String rfSign=String((char*)message);
+ // check if received string is from transmitter
+ if(rfSign=="Defo_Fouls"){
+  Serial.println(rfSign);
+  // all vibrations works 3 sec 
+  VibrateAll();
+ }  
 }
 
 void MeasureAndVibrate(){
@@ -60,7 +64,7 @@ void MeasureAndVibrate(){
   //3 ultrasonic measuring, if object inside range, keep vibration working
   Measurement(0); 
   Measurement(1);
-//  Measurement(2);
+  Measurement(2);
 
   //after each interval, change the state of vibration
   if (currentMillis - previousMillis >= interval)  
