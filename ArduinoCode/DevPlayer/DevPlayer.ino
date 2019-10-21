@@ -1,4 +1,5 @@
-// if object in the dectecting range of an ultrasonic sensor, the corresponding vibration motor shal vibrate intermittently(0.1s on 0.1s off)
+// if object in the dectecting range of an ultrasonic sensor, 
+// the corresponding vibration motor shal vibrate intermittently(0.25s on 0.25s off)
 // if receive radio signal that referee whistled, all vibration motors vibrate together last 3 second
 
 // VirtualWire changes TIMER1 setting, pwm pin only 5,6 won't get conflicted under default configation.
@@ -17,7 +18,7 @@ const int vibPin[3]={5,6,11};      // power source pin of 3 vibrations wz pwm fu
 const int rfRcv=12;                // pin number of RF receiver
 
 unsigned long previousMillis = 0;  // record timing
-const long interval = 100;         // interval of vibration on and off
+const long interval = 250;         // interval of vibration on and off
 
 int vibRun[3]={0,0,0};             // whehter turn on the vibraton
 
@@ -111,7 +112,7 @@ void Measurement(int nr){
   }
   else if(distance<=100 && distance >50)
   {
-    vibRun[nr]=120;
+    vibRun[nr]=200;
     Serial.print(nr);
     Serial.print(":");
     Serial.print(distance);

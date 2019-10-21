@@ -1,7 +1,8 @@
 #include <VirtualWire.h>  //library for RF kit
 #include <FreqMeasure.h>  //library for frequence measurement
 
-//default receiver on D11, transmitter on D12
+// default transmitter on D12
+// sound detection sensor on D8
 void setup() {
   Serial.begin(9600);
   FreqMeasure.begin();    //initialize including pbs of processor
@@ -13,7 +14,8 @@ float frequency;
 int continuity =0;
 
 void loop() {
-  // while receive sound, calculate the sine wave occurs during the duration and convert to square wave with frequency
+  // while receive sound, calculate the sine wave occurs during the duration
+  // and convert to square wave with frequency
   if (FreqMeasure.available()) {
     sum = sum + FreqMeasure.read();
     count = count + 1;
@@ -49,7 +51,9 @@ void loop() {
 
 void send ()
 { 
-  vw_setup(2000);         // bits per sec, must setup inside function, cuz the RF and Frequency converter need initialize different bps on processor
+  // bits per sec, must setup inside function
+  // cuz the RF and Frequency converter need initialize different bps on processor
+  vw_setup(2000);         
   const char * message="Defo_Fouls";
   Serial.println(message);
   vw_send((uint8_t *)message, strlen(message));
